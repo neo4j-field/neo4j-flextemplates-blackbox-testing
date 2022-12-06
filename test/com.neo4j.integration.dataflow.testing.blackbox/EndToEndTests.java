@@ -21,6 +21,7 @@ public class EndToEndTests {
                 System.out.println("Job Id: " + response.getJobId());
                 System.out.println("Region Id: " + response.getRegion());
 
+                String status="NA";
                 for (int i=0;i<3;i++) {
                     JobCheckResponse jobCheckResponse = JobRunnerUtils.checkJobUnderServiceAccount(response);
                     System.out.println("STATUS: "+jobCheckResponse.getStatus());
