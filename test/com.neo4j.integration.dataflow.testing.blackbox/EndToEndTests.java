@@ -9,8 +9,9 @@ public class EndToEndTests {
         String fileNameStr = Thread.currentThread().getStackTrace()[1].getMethodName() + "-" + System.currentTimeMillis();
         System.out.println("Running end-to-end test: " + fileNameStr);
         //String result=runJobUnderServiceAccount("create_job_inline_northwind.sh");
+        String shell_file_name="create_job_inline_solutions_digital_twin.sh";
         try {
-            com.neo4j.integration.dataflow.testing.blackbox.utils.JobRunnerResponse response = JobRunnerUtils.runJobUnderServiceAccount("echo-foo.sh");
+            com.neo4j.integration.dataflow.testing.blackbox.utils.JobRunnerResponse response = JobRunnerUtils.runJobUnderServiceAccount(shell_file_name);
             // Activate service account
             if (response.getHasError()){
                 System.out.println("Error running shell script: " + response.getResponseOutput());
@@ -22,10 +23,10 @@ public class EndToEndTests {
                 System.out.println("Region Id: " + response.getRegion());
 
                 String status="NA";
-                for (int i=0;i<3;i++) {
+                for (int i=0;i<200;i++) {
                     JobCheckResponse jobCheckResponse = JobRunnerUtils.checkJobUnderServiceAccount(response);
                     System.out.println("STATUS: "+jobCheckResponse.getStatus());
-                    Thread.sleep(2000);
+                    Thread.sleep(5000);
                 }
             }
         } catch (Exception e){

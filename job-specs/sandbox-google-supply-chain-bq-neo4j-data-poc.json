@@ -41,7 +41,7 @@
     {
       "type": "bigquery",
       "name": "gdelt-ggg",
-      "query": "SELECT DateTime, URL, DocTone, Location, GeoType, Adm1Code, ContextualText, Lon, Lat, CountryCode  FROM FROM neo4j-se-team-201905.private_solutions_gcp_supply_chain.news_egg_3140_records WHERE DATE(DateTime) > '2022-03-20'AND ((REGEXP_CONTAINS(Title, r'(?i) port | factory') AND REGEXP_CONTAINS(Title, r'(?i) delay | delays | closed | closing | strike | jam | jams ')) OR REGEXP_CONTAINS(Title, r'(?i) supply concern | freight | supply chain ')) AND CountryCode IN ('CH','JA','EI','GM','US','IT','FR','KS','TW','SN') AND DocTone < -5 LIMIT 10000"
+      "query": "SELECT DateTime, URL, DocTone, Location, GeoType, Adm1Code, ContextualText, Lon, Lat, CountryCode  FROM neo4j-se-team-201905.private_solutions_gcp_supply_chain.news_egg_3140_records WHERE DATE(DateTime) > '2022-03-20'AND ((REGEXP_CONTAINS(Title, r'(?i) port | factory') AND REGEXP_CONTAINS(Title, r'(?i) delay | delays | closed | closing | strike | jam | jams ')) OR REGEXP_CONTAINS(Title, r'(?i) supply concern | freight | supply chain ')) AND CountryCode IN ('CH','JA','EI','GM','US','IT','FR','KS','TW','SN') AND DocTone < -5 LIMIT 10000"
     }
   ],
   "targets": [
