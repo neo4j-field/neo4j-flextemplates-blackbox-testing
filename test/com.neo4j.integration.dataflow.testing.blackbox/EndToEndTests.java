@@ -8,10 +8,13 @@ public class EndToEndTests {
 
         String fileNameStr = Thread.currentThread().getStackTrace()[1].getMethodName() + "-" + System.currentTimeMillis();
         System.out.println("Running end-to-end test: " + fileNameStr);
-        String shell_file_name="create_job_inline_solutions_digital_twin.sh";
-        if (args.length>0){
-            shell_file_name=args[0];
+        String shell_file_name="regression_test_northwind.sh";
+
+        if (args.length==0){
+            System.out.println("Please supply the name of the shell script to run.");
+            return;
         }
+        shell_file_name=args[0];
         System.out.println("Using shell file name: " + shell_file_name);
 
         try {
@@ -27,9 +30,18 @@ public class EndToEndTests {
                 System.out.println("Region Id: " + response.getRegion());
 
                 String status="NA";
+                boolean dataLoaded=false;
                 for (int i=0;i<200;i++) {
                     JobCheckResponse jobCheckResponse = JobRunnerUtils.checkJobUnderServiceAccount(response);
                     System.out.println("STATUS: "+jobCheckResponse.getStatus());
+                    if (jobCheckResponse.getStatus().equals("Finished")){
+                        System.out.println("Done, now checking results.");
+                        dataLoaded=true;
+                        break;
+                    } else if (jobCheckResponse.getStatus().equals("Failed") || jobCheckResponse.getStatus().equals("Canceled")){
+                        System.out.println("Error, stopping.");
+                        break;
+                    }
                     Thread.sleep(5000);
                 }
             }
