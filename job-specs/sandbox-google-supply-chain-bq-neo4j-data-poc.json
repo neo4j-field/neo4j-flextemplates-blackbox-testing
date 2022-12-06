@@ -11,37 +11,37 @@
     {
       "type": "bigquery",
       "name": "product",
-      "query": "SELECT product_uid, product_id, organization_level, product_name, product_description, product_cost, product_hierarchy_level FROM neo4j-se-team-201905.private_solutions_gcp_supply_chain.product"
+      "query": "SELECT distinct product_uid, product_id, manufacturer_legal_entity_uid, product_name, product_description, product_cost, product_hierarchy_level, product_image_url FROM $datasetName.product"
     },
     {
       "type": "bigquery",
       "name": "location",
-      "query": "SELECT * FROM neo4j-se-team-201905.private_solutions_gcp_supply_chain.location"
+      "query": "SELECT * FROM $datasetName.location"
     },
     {
       "type": "bigquery",
       "name": "legal-entity",
-      "query": "SELECT *, 'Temp' as temp_prop FROM neo4j-se-team-201905.private_solutions_gcp_supply_chain.legal_entity"
+      "query": "SELECT * FROM $datasetName.legal_entity"
     },
     {
       "type": "bigquery",
       "name": "inventory",
-      "query": "SELECT *, 'Active' as status FROM neo4j-se-team-201905.private_solutions_gcp_supply_chain.inventory"
+      "query": "SELECT *, 'Active' as status FROM $datasetName.inventory"
     },
     {
       "type": "bigquery",
       "name": "product-subpart-relationship",
-      "query": "SELECT *, CONCAT(product_uid, subpart_product_uid) as product_subpart_uid FROM neo4j-se-team-201905.private_solutions_gcp_supply_chain.product_subpart_relationship"
+      "query": "select product_hierarchy_level_name as product_uid, product_hierarchy_level_1_name as subpart_uid, product_hierarchy_level_1_quantity as quantity, product_hierarchy_level_1_cost as cost from $datasetName.product where product_hierarchy_level_name is not NULL and product_hierarchy_level_1_name is not null and product_hierarchy_level_name  != '' and product_hierarchy_level_1_name != '' union distinct select product_hierarchy_level_1_name as product_uid, product_hierarchy_level_2_name as subpart_uid, product_hierarchy_level_2_quantity as quantity, product_hierarchy_level_2_cost as cost from $datasetName.product where product_hierarchy_level_1_name is not NULL and product_hierarchy_level_2_name is not null and product_hierarchy_level_1_name != '' and product_hierarchy_level_2_name != '' union distinct select product_hierarchy_level_2_name as product_uid, product_hierarchy_level_3_name as subpart_uid, product_hierarchy_level_3_quantity as quantity, product_hierarchy_level_3_cost as cost from $datasetName.product where product_hierarchy_level_2_name is not NULL and product_hierarchy_level_3_name is not null and product_hierarchy_level_2_name != '' and product_hierarchy_level_3_name != ''"
     },
     {
       "type": "bigquery",
       "name": "order",
-      "query": "SELECT * FROM neo4j-se-team-201905.private_solutions_gcp_supply_chain.order"
+      "query": "SELECT * FROM $datasetName.order"
     },
     {
       "type": "bigquery",
       "name": "gdelt-ggg",
-      "query": "SELECT DateTime, URL, DocTone, Location, GeoType, Adm1Code, ContextualText, Lon, Lat, CountryCode  FROM neo4j-se-team-201905.private_solutions_gcp_supply_chain.news_egg_3140_records WHERE DATE(DateTime) > '2022-03-20'AND ((REGEXP_CONTAINS(Title, r'(?i) port | factory') AND REGEXP_CONTAINS(Title, r'(?i) delay | delays | closed | closing | strike | jam | jams ')) OR REGEXP_CONTAINS(Title, r'(?i) supply concern | freight | supply chain ')) AND CountryCode IN ('CH','JA','EI','GM','US','IT','FR','KS','TW','SN') AND DocTone < -5 LIMIT 10000"
+      "query": "SELECT DateTime, URL, DocTone, Location, GeoType, Adm1Code, ContextualText, Lon, Lat, CountryCode  FROM $datasetName.news_egg_3140_records WHERE DATE(DateTime) > '2022-03-20'AND ((REGEXP_CONTAINS(Title, r'(?i) port | factory') AND REGEXP_CONTAINS(Title, r'(?i) delay | delays | closed | closing | strike | jam | jams ')) OR REGEXP_CONTAINS(Title, r'(?i) supply concern | freight | supply chain ')) AND CountryCode IN ('CH','JA','EI','GM','US','IT','FR','KS','TW','SN') AND DocTone < -5 LIMIT 10000"
     }
   ],
   "targets": [
@@ -74,9 +74,6 @@
               },
               {
                 "product_description": "lname"
-              },
-              {
-                "organization_level": "tempManufacturerName"
               }
             ],
             "doubles": [
@@ -149,13 +146,13 @@
           ],
           "keys": [
             {
-              "legal_entity_name": "name"
+              "legal_entity_uid": "id"
             }
           ],
           "properties": {
-            "longs": [
+            "strings": [
               {
-                "address_id": "tempLocationId"
+                "legal_entity_name": "name"
               }
             ]
           }
@@ -185,12 +182,6 @@
             "strings": [
               {
                 "status": "partStatus"
-              },
-              {
-                "inventory_ownership": "tempInventoryOwnership"
-              },
-              {
-                "product_uid": "tempProductId"
               }
             ],
             "longs": [
@@ -225,9 +216,6 @@
             "strings": [
               {
                 "order_id": "orderId"
-              },
-              {
-                "product_uid": "tempProductId"
               }
             ],
             "longs": [
@@ -239,47 +227,10 @@
               {
                 "sales_price": "price"
               }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "node": {
-        "source": "product-subpart-relationship",
-        "name": "TempProductSubpart",
-        "active": true,
-        "mode": "merge",
-        "transform": {
-          "group": true
-        },
-        "automap": false,
-        "mappings": {
-          "labels": [
-            "\"TempProductSubpart\""
-          ],
-          "keys": [
-            {
-              "product_subpart_uid": "id"
-            }
-          ],
-          "properties": {
-            "strings": [
-              {
-                "product_uid": "tempProductUid"
-              },
-              {
-                "subpart_product_uid": "tempSubpartProductUid"
-              }
             ],
-            "longs": [
+            "dates": [
               {
-                "quantity_to_build_product": "tempQuantity"
-              }
-            ],
-            "doubles": [
-              {
-                "cost_per_subpart": "tempCost"
+                "creation_Date": "orderDate"
               }
             ]
           }
@@ -353,21 +304,206 @@
           "type": "\"ADDRESS\"",
           "source": {
             "label": "\"LegalEntity\"",
-            "key": {"legal_entity_name": "name"}
+            "key": {"legal_entity_uid" : "id"}
           },
           "target": {
             "label": "\"Address\"",
-            "key": {"address_id": "id"}
+            "key": {"location_uid" : "id"}
+          }
+        }
+      }
+    },
+    {
+      "edge": {
+        "source": "inventory",
+        "name": "Inventory to supplier relationship",
+        "mode": "merge",
+        "active": true,
+        "transform": {
+          "group": true
+        },
+        "automap": false,
+        "mappings": {
+          "type": "\"SUPPLIER\"",
+          "source": {
+            "label": "\"Inventory\"",
+            "key": {"inventory_uid" : "id"}
+          },
+          "target": {
+            "label": "\"LegalEntity\"",
+            "key": {"supplier_legal_entity_uid" : "id"}
+          }
+        }
+      }
+    },
+    {
+      "edge": {
+        "source": "inventory",
+        "name": "Inventory to product relationship",
+        "mode": "merge",
+        "active": true,
+        "transform": {
+          "group": true
+        },
+        "automap": false,
+        "mappings": {
+          "type": "\"PRODUCT\"",
+          "source": {
+            "label": "\"Inventory\"",
+            "key": {"inventory_uid" : "id"}
+          },
+          "target": {
+            "label": "\"Product\"",
+            "key": {"product_uid" : "id"}
+          }
+        }
+      }
+    },
+    {
+      "edge": {
+        "source": "order",
+        "name": "Order to product relationship",
+        "mode": "merge",
+        "active": true,
+        "transform": {
+          "group": true
+        },
+        "automap": false,
+        "mappings": {
+          "type": "\"PRODUCT\"",
+          "source": {
+            "label": "\"Order\"",
+            "key": {"order_uid" : "id"}
+          },
+          "target": {
+            "label": "\"Product\"",
+            "key": {"product_uid" : "id"}
+          }
+        }
+      }
+    },
+    {
+      "edge": {
+        "source": "product",
+        "name": "product-manufacturer-relationship",
+        "description": "Product to manufacturer relationship",
+        "mode": "merge",
+        "active": true,
+        "transform": {
+          "group": true
+        },
+        "automap": false,
+        "mappings": {
+          "type": "\"MANUFACTURER\"",
+          "source": {
+            "label": "\"Product\"",
+            "key": {"product_uid" : "id"}
+          },
+          "target": {
+            "label": "\"LegalEntity\"",
+            "key": {"manufacturer_legal_entity_uid" : "id"}
+          }
+        }
+      }
+    },
+    {
+      "edge": {
+        "source": "product-subpart-relationship",
+        "name": "product-subpart-relationship-population",
+        "description": "Product to Subpart relationship",
+        "mode": "merge",
+        "active": true,
+        "transform": {
+          "group": true
+        },
+        "automap": false,
+        "mappings": {
+          "type": "\"HAS_PART\"",
+          "source": {
+            "label": "\"Product\"",
+            "key": {"product_uid" : "id"}
+          },
+          "target": {
+            "label": "\"Product\"",
+            "key": {"subpart_uid" : "id"}
           },
           "properties": {
-            "strings": [
+            "longs": [
               {
-                "temp_prop": "tempProperty"
+                "quantity": "quantity"
+              }
+            ],
+            "doubles": [
+              {
+                "cost": "cost"
               }
             ]
           }
         }
       }
     }
+  ],
+  "actions": [
+    {
+      "name": "address-data-population",
+      "description": "Populate Address point data",
+      "execute_after": "loads",
+      "execute_after_name": "",
+      "type": "cypher",
+      "options": [
+        {"cypher": "MATCH (addr:Address) SET addr += {point : point({latitude: toFloat(addr.latitude), longitude: toFloat(addr.longitude)}), latFloat: toFloat(addr.latitude), longFloat: toFloat(addr.longitude)}"}
+      ],
+      "headers": [
+      ]
+    },
+    {
+      "name": "Populate Product Level1 Node Label",
+      "execute_after": "node",
+      "execute_after_name": "Product",
+      "type": "cypher",
+      "options": [
+        {"cypher": "MATCH (prod:Product {level: 1}) SET prod:Level1"}
+      ],
+      "headers": [
+      ]
+    },
+    {
+      "name": "gggrecord-population",
+      "description": "GGGRecord population",
+      "execute_after": "action",
+      "execute_after_name": "address-data-population",
+      "type": "cypher",
+      "options": [
+        {"cypher": "MATCH (tempggg:GGGRecord) WITH     tempggg.sourceUrl as GGGsourceUrl,     datetime(tempggg.tempDateTime) as GGGdate,     toFloat(coalesce(tempggg.tempDocTone, '0.0')) as GGGaverageTone,     tempggg.tempLocation as GeoRefname,     tempggg.tempGeoType as GeoReftype,     tempggg.tempAdm1Code as GeoRefcode,     tempggg.tempContextualText as GGGtext,     tempggg.tempLon as GGGtitle,     tempggg.tempLon as Coordinateslongitude,     tempggg.tempLat as Coordinateslatitude,     tempggg.tempCountryCode as countryCode WITH GGGsourceUrl, GGGdate, GGGaverageTone, GeoRefname,GeoReftype,GeoRefcode,GGGtext,GGGtitle,Coordinateslongitude,Coordinateslatitude,countryCode MERGE (ggg:GGGRecord {sourceUrl: GGGsourceUrl}) SET ggg.date = GGGdate,ggg.averageTone = GGGaverageTone,ggg.title = GGGtitle, ggg.text = GGGtext WITH ggg,GeoRefname,GeoReftype,GeoRefcode,Coordinateslongitude,Coordinateslatitude,countryCode,GGGdate MERGE (gr:GeoRef {id: GeoReftype + '_' + GeoRefcode + '_' + GeoRefname}) SET gr += {     type: CASE GeoReftype         WHEN 1 THEN 'country'         WHEN 2 THEN 'usState'         WHEN 3 THEN 'usCity'         WHEN 4 THEN 'worldCity'         WHEN 5 THEN 'worldState'         ELSE 'unknown'         END,     name: GeoRefname } with ggg, gr, Coordinateslongitude,Coordinateslatitude,countryCode,GeoRefcode,GGGdate MERGE (cl:Coordinates {id: Coordinateslatitude + '_' + Coordinateslongitude}) SET cl += {     point: point({latitude: toFloat(Coordinateslatitude), longitude: toFloat(Coordinateslongitude)}),     latitude: toFloat(Coordinateslatitude),     longitude: toFloat(Coordinateslongitude) } with ggg, gr,cl,countryCode,GeoRefcode,GGGdate MERGE (gr)-[:COORDINATES]->(cl) MERGE (c:Country {id: countryCode}) MERGE (adm1:Adm1Location {id: GeoRefcode}) MERGE (adm1)-[:COUNTRY]->(c) MERGE (gr)-[:LOCATION]->(adm1) MERGE (ggg)-[:GEOREF]->(gr) MERGE (date:Date {id: GGGdate.epochMillis + '_' + apoc.date.field(GGGdate.epochMillis, 'month') + '_' + apoc.date.field(GGGdate.epochMillis, 'day') + '_' + apoc.date.field(GGGdate.epochMillis, 'year')}) SET date += {     month: toInteger(coalesce(apoc.date.field(GGGdate.epochMillis, 'month') , 0)),     day: toInteger(coalesce(apoc.date.field(GGGdate.epochMillis, 'day'), 0)),     year: toInteger(coalesce(apoc.date.field(GGGdate.epochMillis, 'year'), 0)) } MERGE (ggg)-[:DATE]->(date) WITH {     `South Korea`: 'KS',     China: 'CH',     France: 'FR',     `United States`: 'US',     Taiwan: 'TW',     Germany: 'GM',     Ireland: 'EI',     Singapore: 'SN',     Italy: 'IT',     Japan: 'JA' } as countryCodes, {     KS: 'South Korea',     CH: 'China',     FR: 'France',     US: 'United States',     TW: 'Taiwan',     GM: 'Germany',     EI: 'Ireland',     SN: 'Singapore',     IT: 'Italy',     JA: 'Japan' } as countries MATCH (c:Country) WITH c, countries[c.id] as country WHERE country IS NOT NULL SET c.countryName = country"}
+      ],
+      "headers": [
+      ]
+    },
+    {
+      "name": "similar-part-relationship",
+      "description": "SIMILAR_PART relationship",
+      "execute_after": "edge",
+      "execute_after_name": "product-manufacturer-relationship",
+      "type": "cypher",
+      "options": [
+        {"cypher": "MATCH (p:Product)-[:MANUFACTURER]->(manufacturer:LegalEntity) WHERE p.level > 1 WITH p.level as level, collect({part: p, manufacturer: manufacturer}) as parts UNWIND parts as part1 UNWIND parts as part2 WITH level, part1, part2 WHERE id(part1.part) < id(part2.part) AND part1.manufacturer <> part2.manufacturer WITH level, part1, part2, apoc.text.levenshteinSimilarity(part1.part.name, part2.part.name) as similarity WHERE similarity >= 0.75 WITH level, part1.part as part1, part2.part as part2, similarity MERGE (part1)-[r1:SIMILAR_PART]->(part2) MERGE (part2)-[r2:SIMILAR_PART]->(part1) SET r1.similarity = similarity SET r2.similarity = similarity"}
+      ],
+      "headers": [
+      ]
+    },
+    {
+      "name": "coordinates-relationship",
+      "description": "Coordinates relationship",
+      "execute_after": "action",
+      "execute_after_name": "gggrecord-population",
+      "type": "cypher",
+      "options": [
+        {"cypher": "WITH [     {         distance: 10000,         rel: 'WITHIN_10KM'     },     {         distance: 50000,         rel: 'WITHIN_50KM'     },     {         distance: 100000,         rel:'WITHIN_100KM'     },     {         distance: 500000,         rel: 'WITHIN_500KM'     } ] as ranges MATCH (a:Address) WHERE a.point IS NOT NULL WITH ranges, collect(a) as addresses MATCH (c:Coordinates) WITH c, apoc.coll.flatten([a IN addresses |     [r IN ranges WHERE point.distance(c.point, a.point) <= r.distance |         { rel: r.rel, a: a, distance: point.distance(c.point, a.point) }     ] ]) as relsToAdd UNWIND relsToAdd as relToAdd WITH c, relToAdd,     'MERGE (a)-[rel:' + relToAdd.rel + ']->(c)\n' +     'SET rel.distance = distance'      as cypher CALL apoc.cypher.doIt(cypher, {c: c, a: relToAdd.a, distance: relToAdd.distance}) YIELD value WITH collect(c) as _ RETURN 'done'"}
+      ],
+      "headers": [
+      ]
+    }
+
   ]
 }
+

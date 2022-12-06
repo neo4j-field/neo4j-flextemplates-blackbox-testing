@@ -8,4 +8,5 @@ gcloud dataflow flex-template run "test-text-inline-cli-`date +%Y%m%d-%H%M%S`" \
     --region "$REGION" \
     --project "$PROJECTID" \
     --parameters jobSpecUri="gs://neo4j-dataflow-internal/testing/google-supply-chain-bq-neo4j-data-poc.json" \
-    --parameters neo4jConnectionUri="gs://neo4j-dataflow-internal/testing/auradb-free-connection.json"
+    --parameters neo4jConnectionUri="gs://neo4j-dataflow-internal/testing/auradb-free-connection.json" \
+    --parameters optionsJson="{\"datasetName\":\"neo4j-se-team-201905.private_solutions_gcp_supply_chain\"}"

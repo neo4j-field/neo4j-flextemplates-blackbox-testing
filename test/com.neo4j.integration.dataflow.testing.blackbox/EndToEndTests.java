@@ -8,8 +8,12 @@ public class EndToEndTests {
 
         String fileNameStr = Thread.currentThread().getStackTrace()[1].getMethodName() + "-" + System.currentTimeMillis();
         System.out.println("Running end-to-end test: " + fileNameStr);
-        //String result=runJobUnderServiceAccount("create_job_inline_northwind.sh");
         String shell_file_name="create_job_inline_solutions_digital_twin.sh";
+        if (args.length>0){
+            shell_file_name=args[0];
+        }
+        System.out.println("Using shell file name: " + shell_file_name);
+
         try {
             com.neo4j.integration.dataflow.testing.blackbox.utils.JobRunnerResponse response = JobRunnerUtils.runJobUnderServiceAccount(shell_file_name);
             // Activate service account
