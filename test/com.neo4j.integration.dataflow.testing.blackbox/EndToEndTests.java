@@ -4,6 +4,9 @@ import com.neo4j.integration.dataflow.testing.blackbox.utils.JobRunnerUtils;
 import com.neo4j.integration.dataflow.testing.blackbox.utils.JobCheckResponse;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.neo4j.driver.AuthTokens;
+import org.neo4j.driver.Driver;
+import org.neo4j.driver.GraphDatabase;
 
 public class EndToEndTests {
 
@@ -101,8 +104,23 @@ public class EndToEndTests {
                 String errMsg = "Connection file does not exist: " + assertionsFile.getAbsoluteFile();
             }
 
+            //TODO: instantiate driver
+            org.neo4j.driver.Driver driver = GraphDatabase.driver(connectionParams.serverUrl,
+                    AuthTokens.basic(connectionParams.username, connectionParams.password));
+
+            //TODO: check connection
+
 
             JSONObject assertionsJson = new JSONObject(assertionsFile);
+            //TODO: loop through assertions
+
+
+            //TODO: run Cypher
+
+
+            //TODO: check expected results
+
+
 
 
 
