@@ -2,13 +2,19 @@ package com.neo4j.integration.dataflow.testing.blackbox;
 
 import com.neo4j.integration.dataflow.testing.blackbox.utils.JobRunnerUtils;
 import com.neo4j.integration.dataflow.testing.blackbox.utils.JobCheckResponse;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class EndToEndTests {
+
+    static String NEO4J_CONNECTIONS_FILE="auradb-free-connection.json";
 
     public static void main(String[] args) {
 
         String fileNameStr = Thread.currentThread().getStackTrace()[1].getMethodName() + "-" + System.currentTimeMillis();
         System.out.println("Running end-to-end test: " + fileNameStr);
-        String shell_file_name="regression_test_northwind.sh";
+        String shell_file_name="";
+        String assertions_file_name="";
 
         if (args.length==0){
             System.out.println("Please supply the name of the shell script to run.");
@@ -16,6 +22,23 @@ public class EndToEndTests {
         }
         shell_file_name=args[0];
         System.out.println("Using shell file name: " + shell_file_name);
+        if (args.length==2){
+            assertions_file_name=args[1];
+        } else {
+            assertions_file_name=shell_file_name.replace(".sh",".json");
+        }
+        boolean loadedData=runShellScript(shell_file_name);
+        if (!loadedData){
+            System.out.println("Could not load data.");
+        } else {
+            // run tests
+            boolean testsRun=checkAssertions(assertions_file_name);
+        }
+    }
+
+    private static boolean runShellScript(String shell_file_name){
+
+        boolean dataLoaded=false;
 
         try {
             com.neo4j.integration.dataflow.testing.blackbox.utils.JobRunnerResponse response = JobRunnerUtils.runJobUnderServiceAccount(shell_file_name);
@@ -30,11 +53,10 @@ public class EndToEndTests {
                 System.out.println("Region Id: " + response.getRegion());
 
                 String status="NA";
-                boolean dataLoaded=false;
                 for (int i=0;i<200;i++) {
                     JobCheckResponse jobCheckResponse = JobRunnerUtils.checkJobUnderServiceAccount(response);
                     System.out.println("STATUS: "+jobCheckResponse.getStatus());
-                    if (jobCheckResponse.getStatus().equals("Finished")){
+                    if (jobCheckResponse.getStatus().equals("Done")){
                         System.out.println("Done, now checking results.");
                         dataLoaded=true;
                         break;
@@ -48,6 +70,58 @@ public class EndToEndTests {
         } catch (Exception e){
             System.err.println("Error running shell script: " + e.getMessage());
         }
+
+        return dataLoaded;
     }
+
+
+    private static boolean checkAssertions(String assertion_file_name){
+
+        boolean assertionsSucceeded=true;
+        String serverUrl, database, authType, username, password;
+
+
+        try {
+            String currentPath = new java.io.File(".").getCanonicalPath();
+
+            String connectionsFilePath = currentPath + "/shell-scripts/" + NEO4J_CONNECTIONS_FILE;
+            java.io.File connectionsFile=new java.io.File(connectionsFilePath);
+            if (!connectionsFile.exists()) {
+                String errMsg = "Cannot find Neo4j connections file: " + connectionsFile.getAbsoluteFile();
+                return false;
+            }
+
+            ConnectionParams connectionParams=new com.neo4j.integration.dataflow.testing.blackbox.ConnectionParams(connectionsFile);
+
+            String assertionsFilePath = currentPath + "/shell-scripts/" + assertion_file_name;
+            System.out.println("Running file: " + assertionsFilePath);
+
+            java.io.File assertionsFile=new java.io.File(assertionsFilePath);
+            if (!assertionsFile.exists()) {
+                String errMsg = "Connection file does not exist: " + assertionsFile.getAbsoluteFile();
+            }
+
+
+            JSONObject assertionsJson = new JSONObject(assertionsFile);
+
+
+
+
+            // Check Neo4j connection
+
+            // Loop through assertions
+
+
+
+
+
+
+        } catch (Exception e){
+            System.err.println("Error running assertions script: " + e.getMessage());
+        }
+
+        return assertionsSucceeded;
+    }
+
 
 }
