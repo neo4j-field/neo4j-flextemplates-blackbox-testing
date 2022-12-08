@@ -20,11 +20,14 @@ Download a GCP service account key and put it somewhere locally.  Register this 
 
 Caller syntax:
 
-    com.neo4j.integration.dataflow.testing.blackbox.EndToEndTests <shell-script file> <assertions json file>
+    com.neo4j.integration.dataflow.testing.blackbox.EndToEndTests -s regression_test_northwind.sh -t regression_test_northwind.json -o true
 
-The first argument is the shell file to run.  This was the only way to enforce GCP security properly.
+usage: EndToEndTests
+ -o,--onlytest <arg>   only test outputs
+ -s,--shell <arg>      shell filename
+ -t,--test <arg>       test json filename.
 
-The second argument is the assertions file to run.  It will by default use <shell-file>.replaceAll(".sh",".json")
+By default, the assertions file will become <shell-file>.replaceAll(".sh",".json")
 
 Both files should be in the /shell-scripts project directory.
 
