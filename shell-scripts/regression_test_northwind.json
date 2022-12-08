@@ -1,11 +1,15 @@
 [
   {
-    "cypher": "foo1",
-    "expected": "bar1"
+    "cypher": "match (p:Product) return count(p)",
+    "expected": "52"
   },
   {
-    "cypher": "foo2",
-    "expected": "bar2"
+    "cypher": "match (p:Customer) return count(p)",
+    "expected": "7"
+  },
+  {
+    "cypher": "match ()-[r]-() return count(r)",
+    "expected": "194"
   }
 ]
 

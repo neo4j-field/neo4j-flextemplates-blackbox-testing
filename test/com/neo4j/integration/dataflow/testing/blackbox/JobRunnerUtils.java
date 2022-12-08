@@ -1,4 +1,4 @@
-package com.neo4j.integration.dataflow.testing.blackbox.utils;
+package com.neo4j.integration.dataflow.testing.blackbox;
 
 public class JobRunnerUtils {
 
@@ -10,7 +10,7 @@ public class JobRunnerUtils {
             java.io.File file = new java.io.File(filePath);
             if (!file.exists()) {
                 String errMsg = "Shell file does not exist: " + file.getAbsoluteFile();
-                JobRunnerResponse response = new com.neo4j.integration.dataflow.testing.blackbox.utils.JobRunnerResponse();
+                JobRunnerResponse response = new JobRunnerResponse();
                 response.setHasError(true);
                 response.setResponseOutput(errMsg);
                 return response;
@@ -34,7 +34,7 @@ public class JobRunnerUtils {
             }
             return parseJobOutput(hasError, builder.toString());
         } catch (Exception e) {
-             JobRunnerResponse response = new com.neo4j.integration.dataflow.testing.blackbox.utils.JobRunnerResponse();
+             JobRunnerResponse response = new JobRunnerResponse();
              response.setHasError(true);
              response.setResponseOutput("Error: " + e.getMessage());
              return response;
@@ -45,7 +45,7 @@ public class JobRunnerUtils {
 
         System.out.println("************checkJobUnderServiceAccount************");
 
-        JobCheckResponse jobCheckResponse=new com.neo4j.integration.dataflow.testing.blackbox.utils.JobCheckResponse();
+        JobCheckResponse jobCheckResponse=new JobCheckResponse();
 
         String shellFileName="check-job-status-template.sh";
         try {

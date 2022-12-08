@@ -1,4 +1,4 @@
-package com.neo4j.integration.dataflow.testing.blackbox.utils;
+package com.neo4j.integration.dataflow.testing.blackbox;
 
 public class JobCheckResponse {
 
